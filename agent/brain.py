@@ -1,10 +1,7 @@
-import google.generativeai as genai
+from google import genai
 import os
-import json
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 def generate_task(repo_summary):
@@ -14,26 +11,27 @@ def generate_task(repo_summary):
     Analyze this repository:
     {repo_summary}
 
-    Suggest ONE small, safe improvement task.
+    Suggest ONE small, safe improvement.
     Keep it short.
     """
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+
     return response.text.strip()
 
 
 def generate_code_edit(file_path, file_content):
     prompt = f"""
-    You are an expert developer.
-
-    Improve the following file safely.
+    Improve this code safely.
 
     Rules:
     - Do NOT break functionality
-    - Improve readability / structure
-    - Keep logic same
-    - Return ONLY valid Python code
-    - No explanations
+    - Improve readability
+    - Return ONLY full updated code
+    - No explanation
 
     File: {file_path}
 
@@ -41,5 +39,9 @@ def generate_code_edit(file_path, file_content):
     {file_content}
     """
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+
     return response.text.strip()
